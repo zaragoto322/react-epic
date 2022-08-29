@@ -33,7 +33,7 @@ function App() {
             <Route path="/register" element={<Register />}  />
           </Routes>
         </Suspense>
-      </main>
+      </main> 
       <Footer />
     </>
   );

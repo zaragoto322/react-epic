@@ -1,11 +1,17 @@
-import { observable, action } from 'mobx'
+import { observable, action, makeAutoObservable } from 'mobx';
+import Auth from '../models';
+import UserStore from './user';
 
 class AuthStore {
-    @observable isLogin = false;
-    @observable isLoading = false;
+    // @observable isLogin = false;
+    // @observable isLoading = false;
     @observable values = {
         username: '',
         password: ''
+    };
+
+    constructor() {
+        makeAutoObservable(this);
     };
 
     @action setIsLogin(isLogin) {
@@ -17,33 +23,43 @@ class AuthStore {
     }
 
     @action setPassword(password) {
-        this.value.password = password;
+        this.values.password = password;
     }
 
     @action login() {
-        console.log('登录中...');
-        this.isLoading = true;
-        setTimeout(() => {
-            console.log('登录成功');
-            this.isLogin = true;
-            this.isLoading = false;
-        }, 1000);
+        return new Promise((resolve, reject) => {
+            Auth.login(this.values.username, this.values.password)
+            .then(user => {
+                UserStore.pullUser();
+                resolve(user);
+            })
+            .catch(error => {
+                UserStore.resetUser();
+                reject(error);
+            })
+        })
+
     }
 
     @action register() {
-        console.log('注册中...');
-        this.isLoading = true;
-        setTimeout(() => {
-            console.log('注册成功');
-            this.isLogin = true;
-            this.isLoading = false;
-        }, 1000);
+        return new Promise((resolve, reject) => {
+            Auth.register(this.values.username, this.values.password)
+            .then(user => {
+                UserStore.pullUser();
+                resolve(user);
+            })
+            .catch(error => {
+                UserStore.resetUser();
+                reject(error);
+            })
+        })
     }
 
     @action logout() {
-        console.log('已注销');
+        Auth.logout();
+        UserStore.resetUser();
     }
 
 }
 
-export default AuthStore;
+export default new AuthStore();
